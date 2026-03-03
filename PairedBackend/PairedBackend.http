@@ -1,0 +1,6 @@
+@PairedApp_HostAddress = http://localhost:5039
+
+GET {{PairedApp_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
