@@ -6,4 +6,9 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\PairedBackend.Application\PairedBackend.Application.csproj" />
+    <ProjectReference Include="..\PairedBackend.Domain\PairedBackend.Domain.csproj" />
+  </ItemGroup>
+
 </Project>

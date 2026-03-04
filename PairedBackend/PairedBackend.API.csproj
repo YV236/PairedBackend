@@ -17,4 +17,9 @@
     <Folder Include="Controllers\" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\PairedBackend.Application\PairedBackend.Application.csproj" />
+    <ProjectReference Include="..\PairedBackend.Contracts\PairedBackend.Contracts.csproj" />
+  </ItemGroup>
+
 </Project>
