@@ -1,6 +1,8 @@
 ﻿using PairedBackend.Domain.Enums;
 using PairedBackend.Domain.ValueObjects;
 
+namespace PairedBackend.Domain.Entities;
+
 public class Message
 {
     public Guid Id { get; private set; }
@@ -8,6 +10,10 @@ public class Message
     public Guid SenderId { get; private set; }
     public Guid ChatId { get; private set; }
     public DateTime SentDate { get; private set; }
+
+    private readonly List<MessageRead> reads = new();
+
+    public IReadOnlyCollection<MessageRead> Reads => reads;
 
     private Message() { }
 
@@ -18,5 +24,12 @@ public class Message
         SenderId = senderId;
         Value = new MessageValue(value, platform);
         SentDate = DateTime.UtcNow;
+    }
+    internal void MarkAsRead(Guid userId)
+    {
+        if (reads.Any(x => x.UserId == userId))
+            return;
+
+        reads.Add(new MessageRead(Id, userId));
     }
 }
