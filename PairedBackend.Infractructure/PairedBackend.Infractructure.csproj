@@ -7,6 +7,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="10.0.5" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\PairedBackend.Application\PairedBackend.Application.csproj" />
     <ProjectReference Include="..\PairedBackend.Domain\PairedBackend.Domain.csproj" />
   </ItemGroup>
