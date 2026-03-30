@@ -11,7 +11,7 @@ public class Message
     public Guid ChatId { get; private set; }
     public DateTime SentDate { get; private set; }
 
-    private readonly List<MessageRead> reads = new();
+    private readonly List<MessageRead> reads = [];
 
     public IReadOnlyCollection<MessageRead> Reads => reads;
 

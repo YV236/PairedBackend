@@ -1,4 +1,6 @@
-﻿namespace PairedBackend.Domain.Entities;
+﻿using PairedBackend.Domain.Shared;
+
+namespace PairedBackend.Domain.Entities;
 
 public class Friendship
 {
@@ -9,13 +11,18 @@ public class Friendship
 
     private Friendship() { }
 
-    public Friendship(Guid userId, Guid friendId)
+    internal Friendship(Guid userId, Guid friendId)
     {
-        if (userId == friendId)
-            throw new ArgumentException("Cannot be friend with yourself");
-
         UserId = userId;
         FriendId = friendId;
         CreatedAt = DateTime.UtcNow;
+    }
+
+    public static Result<Friendship> Create(Guid userId, Guid friendId)
+    {
+        if (userId == friendId)
+            return Result.Failure<Friendship>(new("Friendship exception","Cannot be friend with yourself"));
+
+        return Result.Success(new Friendship(userId, friendId));
     }
 }

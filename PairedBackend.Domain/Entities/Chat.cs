@@ -1,4 +1,6 @@
 ﻿using PairedBackend.Domain.Enums;
+using PairedBackend.Domain.Errors;
+using PairedBackend.Domain.Shared;
 
 namespace PairedBackend.Domain.Entities;
 
@@ -6,10 +8,10 @@ public class Chat
 {
     public Guid Id { get; private set; }
 
-    private readonly List<Message> messages = new();
+    private readonly List<Message> messages = [];
     public IReadOnlyCollection<Message> Messages => messages;
 
-    private readonly List<ChatParticipant> participants = new();
+    private readonly List<ChatParticipant> participants = [];
     public IReadOnlyCollection<ChatParticipant> Participants => participants;
 
     private Chat() { }
@@ -25,62 +27,82 @@ public class Chat
         participants = distinct.Select(id => new ChatParticipant(id)).ToList();
     }
 
-    public Message SendMessage(Guid senderId, string messageValue, MusicPlatform musicPlatform)
+    public Result<Message> SendMessage(Guid senderId, string messageValue, MusicPlatform musicPlatform)
     {
-        var participant = GetParticipant(senderId);
+        var participantResult = GetParticipant(senderId);
 
-        if (participant.IsBlocked)
-            throw new Exception("User is blocked in this chat");
+        if (participantResult.IsFailure)
+            return Result.Failure<Message>(participantResult.Error);
+
+        if (participantResult.Value.IsBlocked)
+            return Result.Failure<Message>(ChatErrors.UserBlocked);
 
         var message = new Message(Id, senderId, messageValue, musicPlatform);
-
         messages.Add(message);
 
         return message;
     }
-    public void MarkMessageAsRead(Guid messageId, Guid userId)
+    public Result MarkMessageAsRead(Guid messageId, Guid userId)
     {
-        var participant = GetParticipant(userId);
+        var result = GetParticipant(userId);
+        if (result.IsFailure)
+            return Result.Failure<bool>(result.Error);
 
-        if (participant.IsBlocked)
-            throw new Exception("Blocked user cannot read messages");
+        if (result.Value.IsBlocked) 
+            return Result.Failure(ChatErrors.UserBlocked);
 
         var message = messages.FirstOrDefault(x => x.Id == messageId);
-
-        if (message is null)
-            throw new Exception("Message not found");
+        if (message is null) return Result.Failure(ChatErrors.MessageNotFound);
 
         message.MarkAsRead(userId);
+        return Result.Success();
     }
 
-    public void AddUser(Guid userId)
+    public Result AddUser(Guid userId)
     {
-        if (participants.Any(x => x.UserId == userId))
-            throw new Exception("User already in chat");
+        if (participants.Any(x => x.UserId == userId)) 
+            return Result.Failure(ChatErrors.UserAlreadyInChat);
 
         participants.Add(new ChatParticipant(userId));
+        return Result.Success();
     }
-    public void BlockUser(Guid userId)
+    public Result BlockUser(Guid userId)
     {
-        var participant = GetParticipant(userId);
+        var result = GetParticipant(userId);
 
-        if (!participant.IsBlocked)
-            participant.Block();
+        if (result.IsFailure) 
+            return Result.Failure(result.Error);
+
+        if (!result.Value.IsBlocked)
+        {
+            result.Value.Block();
+            return Result.Success();
+        }
+
+        return Result.Success();
     }
-    public void UnblockUser(Guid userId)
+    public Result UnblockUser(Guid userId)
     {
-        var participant = GetParticipant(userId);
+        var result = GetParticipant(userId);
 
-        if (participant.IsBlocked)
-            participant.Unblock();
+        if (result.IsFailure) 
+            return Result.Failure(result.Error);
+
+        if (result.Value.IsBlocked)
+        {
+            result.Value.Unblock();
+            return Result.Success();
+        }
+
+        return Result.Success();
     }
 
-    private ChatParticipant GetParticipant(Guid userId)
+    private Result<ChatParticipant> GetParticipant(Guid userId)
     {
         var participant = participants.FirstOrDefault(x => x.UserId == userId);
 
         if (participant is null)
-            throw new Exception("User is not in chat");
+            return Result.Failure<ChatParticipant>(ChatErrors.UserNotFound);
 
         return participant;
     }

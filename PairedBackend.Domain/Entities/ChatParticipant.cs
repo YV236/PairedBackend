@@ -1,4 +1,6 @@
-﻿namespace PairedBackend.Domain.Entities;
+﻿using PairedBackend.Domain.Shared;
+
+namespace PairedBackend.Domain.Entities;
 
 public class ChatParticipant
 {
