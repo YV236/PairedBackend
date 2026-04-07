@@ -24,7 +24,7 @@ public class Chat
         if (!distinct.Any())
             throw new ArgumentException("Chat must have at least one participant");
 
-        participants = distinct.Select(id => new ChatParticipant(id)).ToList();
+        participants = distinct.Select(id => new ChatParticipant(id, Id)).ToList();
     }
 
     public Result<Message> SendMessage(Guid senderId, string messageValue, MusicPlatform musicPlatform)
@@ -63,7 +63,7 @@ public class Chat
         if (participants.Any(x => x.UserId == userId)) 
             return Result.Failure(ChatErrors.UserAlreadyInChat);
 
-        participants.Add(new ChatParticipant(userId));
+        participants.Add(new ChatParticipant(userId, Id));
         return Result.Success();
     }
     public Result BlockUser(Guid userId)
