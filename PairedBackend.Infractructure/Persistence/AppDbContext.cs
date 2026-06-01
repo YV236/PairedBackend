@@ -1,18 +1,31 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using PairedBackend.Domain.Entities;
 using PairedBackend.Infractructure.Identity;
+using System.Reflection;
 
 namespace PairedBackend.Infractructure.Persistence;
 
-public class AppDbContext : DbContext
+public class AppDbContext(DbContextOptions<AppDbContext> options) : IdentityDbContext<ApplicationUser, IdentityRole<Guid>, Guid>
 {
-    DbSet<ApplicationUser> Users { get; set; }
-    DbSet<Friendship> Friendships { get; set; }
+    public DbSet<Friendship> Friendships => Set<Friendship>();
 
-    DbSet<UserSession> UserSessions { get; set; }
+    public DbSet<UserSession> UserSessions => Set<UserSession>();
 
-    DbSet<Chat> Chats { get; set; }
-    DbSet<ChatParticipant> ChatParticipants { get; set; }
-    DbSet<Message> Messages { get; set; }
-    DbSet<MessageRead> MessageReads { get; set; }
+    public DbSet<Chat> Chats => Set<Chat>();
+
+    public DbSet<ChatParticipant> ChatParticipants => Set<ChatParticipant>();
+
+    public DbSet<Message> Messages => Set<Message>();
+
+    public DbSet<MessageRead> MessageReads => Set<MessageRead>();
+
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
+    {
+        base.OnModelCreating(modelBuilder);
+
+        modelBuilder.ApplyConfigurationsFromAssembly(
+            Assembly.GetExecutingAssembly());
+    }
 }
