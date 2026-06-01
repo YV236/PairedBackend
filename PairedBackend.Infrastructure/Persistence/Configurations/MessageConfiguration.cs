@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using PairedBackend.Domain.Entities;
 using PairedBackend.Domain.Enums;
 
-namespace PairedBackend.Infractructure.Persistence.Configurations;
+namespace PairedBackend.Infrastructure.Persistence.Configurations;
 
 public class MessageConfiguration : IEntityTypeConfiguration<Message>
 {

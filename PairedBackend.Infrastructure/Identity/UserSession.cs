@@ -1,4 +1,4 @@
-﻿namespace PairedBackend.Infractructure.Identity;
+﻿namespace PairedBackend.Infrastructure.Identity;
 
 public class UserSession
 {

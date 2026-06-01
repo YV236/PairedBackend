@@ -2,10 +2,10 @@
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using PairedBackend.Domain.Enums;
-using PairedBackend.Infractructure.Identity;
+using PairedBackend.Infrastructure.Identity;
 using System.Text.Json;
 
-namespace PairedBackend.Infractructure.Persistence.Configurations;
+namespace PairedBackend.Infrastructure.Persistence.Configurations;
 
 public class UserConfiguration : IEntityTypeConfiguration<ApplicationUser>
 {

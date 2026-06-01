@@ -2,7 +2,7 @@
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using PairedBackend.Domain.Entities;
 
-namespace PairedBackend.Infractructure.Persistence.Configurations;
+namespace PairedBackend.Infrastructure.Persistence.Configurations;
 
 public class FriendshipConfiguration : IEntityTypeConfiguration<Friendship>
 {

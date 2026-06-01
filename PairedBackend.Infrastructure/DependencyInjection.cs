@@ -2,11 +2,10 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using PairedBackend.Infractructure.Identity;
-using PairedBackend.Infractructure.Persistence;
+using PairedBackend.Infrastructure.Identity;
+using PairedBackend.Infrastructure.Persistence;
 
-namespace PairedBackend.Infractructure;
-
+namespace PairedBackend.Infrastructure;
 
 public static class DependencyInjection
 {

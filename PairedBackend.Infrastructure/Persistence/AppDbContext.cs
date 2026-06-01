@@ -2,10 +2,10 @@
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using PairedBackend.Domain.Entities;
-using PairedBackend.Infractructure.Identity;
+using PairedBackend.Infrastructure.Identity;
 using System.Reflection;
 
-namespace PairedBackend.Infractructure.Persistence;
+namespace PairedBackend.Infrastructure.Persistence;
 
 public class AppDbContext(DbContextOptions<AppDbContext> options) : IdentityDbContext<ApplicationUser, IdentityRole<Guid>, Guid>
 {

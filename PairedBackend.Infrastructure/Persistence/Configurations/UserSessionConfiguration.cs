@@ -1,8 +1,8 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using PairedBackend.Infractructure.Identity;
+using PairedBackend.Infrastructure.Identity;
 
-namespace PairedBackend.Infractructure.Persistence.Configurations;
+namespace PairedBackend.Infrastructure.Persistence.Configurations;
 
 public class UserSessionConfiguration : IEntityTypeConfiguration<UserSession>
 {

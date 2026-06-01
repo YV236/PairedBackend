@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using PairedBackend.Domain.Enums;
 
-namespace PairedBackend.Infractructure.Identity;
+namespace PairedBackend.Infrastructure.Identity;
 
 public class ApplicationUser : IdentityUser<Guid>
 {

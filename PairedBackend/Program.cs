@@ -1,4 +1,4 @@
-using PairedBackend.Infractructure;
+using PairedBackend.Infrastructure;
 
 var builder = WebApplication.CreateBuilder(args);
 
