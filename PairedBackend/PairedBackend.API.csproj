@@ -24,7 +24,7 @@
   <ItemGroup>
     <ProjectReference Include="..\PairedBackend.Application\PairedBackend.Application.csproj" />
     <ProjectReference Include="..\PairedBackend.Contracts\PairedBackend.Contracts.csproj" />
-    <ProjectReference Include="..\PairedBackend.Infractructure\PairedBackend.Infractructure.csproj" />
+    <ProjectReference Include="..\PairedBackend.Infractructure\PairedBackend.Infrastructure.csproj" />
   </ItemGroup>
 
 </Project>
