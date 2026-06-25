@@ -1,12 +1,15 @@
 ﻿using MediatR;
+using PairedBackend.Application.Services;
 using PairedBackend.Domain.Shared;
 
 namespace PairedBackend.Application.Features.Auth.RegisterUser;
 
-internal class RegisterUserCommandHandler : IRequestHandler<RegisterUserCommand, Result<Guid>>
+internal class RegisterUserCommandHandler(IUserService userService) : IRequestHandler<RegisterUserCommand, Result<Guid>>
 {
-    public Task<Result<Guid>> Handle(RegisterUserCommand request, CancellationToken cancellationToken)
+    public async Task<Result<Guid>> Handle(RegisterUserCommand request, CancellationToken cancellationToken)
     {
-        throw new NotImplementedException();
+        var result = await userService.RegisterAsync(request.Email, request.UserName, request.Password, request.FirstName, request.LastName, cancellationToken);
+
+        return result;
     }
 }
