@@ -5,7 +5,7 @@ namespace PairedBackend.API.Controllers;
 
 [ApiController]
 [Route("api/user")]
-public class UserController : ControllerBase
+public class UserController(IMediator mediator) : ApiController
 {
     [HttpPost]
     [Route("register")]
