@@ -29,10 +29,14 @@ public abstract class ApiController : ControllerBase
 
     private IActionResult HandleFailure(Error error)
     {
-        var statusCode = error.Code.EndsWith("NotFound")
-            ? StatusCodes.Status404NotFound
-            : StatusCodes.Status400BadRequest;
-
+        var statusCode = error.ErrorType switch
+        {
+            ErrorType.NotFound => StatusCodes.Status404NotFound,
+            ErrorType.Unauthorized => StatusCodes.Status401Unauthorized,
+            ErrorType.Forbidden => StatusCodes.Status403Forbidden,
+            ErrorType.Conflict => StatusCodes.Status409Conflict,
+            _ => StatusCodes.Status400BadRequest
+        };
         return Problem(
             statusCode: statusCode,
             title: "Bad Request",
