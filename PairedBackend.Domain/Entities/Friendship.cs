@@ -21,7 +21,7 @@ public class Friendship
     public static Result<Friendship> Create(Guid userId, Guid friendId)
     {
         if (userId == friendId)
-            return Result.Failure<Friendship>(new("Friendship exception","Cannot be friend with yourself"));
+            return Result.Failure<Friendship>(new("Friendship exception","Cannot be friend with yourself", ErrorType.Conflict));
 
         return Result.Success(new Friendship(userId, friendId));
     }
