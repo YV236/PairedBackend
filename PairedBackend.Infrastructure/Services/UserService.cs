@@ -32,7 +32,7 @@ internal class UserService(UserManager<ApplicationUser> userManager) : IUserServ
             return Result.Failure<Guid>(Error.Unexpected);
         }
 
-        var error = new Error(identityError.Code, identityError.Description, ErrorType.Unexpected);
+        var error = new Error(identityError.Code, identityError.Description, ErrorType.ValidationError);
 
         return Result.Failure<Guid>(error);
     }

@@ -32,9 +32,10 @@ public abstract class ApiController : ControllerBase
         var statusCode = error.ErrorType switch
         {
             ErrorType.NotFound => StatusCodes.Status404NotFound,
+            ErrorType.ValidationError => StatusCodes.Status400BadRequest,
+            ErrorType.Conflict => StatusCodes.Status409Conflict,
             ErrorType.Unauthorized => StatusCodes.Status401Unauthorized,
             ErrorType.Forbidden => StatusCodes.Status403Forbidden,
-            ErrorType.Conflict => StatusCodes.Status409Conflict,
             _ => StatusCodes.Status400BadRequest
         };
         return Problem(
