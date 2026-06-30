@@ -14,6 +14,7 @@ public interface IAuthenticationService
         CancellationToken cancellationToken);
 
     Task<Result<LoginResponse>> LoginAsync(
+        string userName,
         string email,
         string password,
         string device,

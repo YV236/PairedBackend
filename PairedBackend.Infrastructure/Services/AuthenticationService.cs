@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using PairedBackend.Application.Features.Auth.LoginUser;
 using PairedBackend.Application.Services;
 using PairedBackend.Domain.Shared;
@@ -36,9 +37,47 @@ internal class AuthenticationService(UserManager<ApplicationUser> userManager, I
 
         return Result.Failure<Guid>(error);
     }
-    public Task<Result<LoginResponse>> LoginAsync(string email, string password, string device, string ipAddress, CancellationToken cancellationToken)
+
+    public async Task<Result<LoginResponse>> LoginAsync(string userName, string email, string password, string device, string ipAddress, CancellationToken cancellationToken)
     {
-        throw new NotImplementedException();
+        ApplicationUser? user = null;
+
+        if (!string.IsNullOrWhiteSpace(email))
+        {
+            user = await userManager.FindByEmailAsync(email);
+        }
+
+        if (user is null && !string.IsNullOrWhiteSpace(userName))
+        {
+            user = await userManager.FindByNameAsync(userName);
+        }
+
+        if (user is null)
+        {
+            return Result.Failure<LoginResponse>(
+                new Error("Auth.InvalidCredentials", "Invalid credentials", ErrorType.Unauthorized));
+        }
+
+        var isPasswordValid = await userManager.CheckPasswordAsync(user, password);
+
+        if (!isPasswordValid)
+        {
+            return Result.Failure<LoginResponse>(
+                new Error("Auth.InvalidCredentials", "Invalid credentials", ErrorType.Unauthorized));
+        }
+
+        var refreshToken = tokenProvider.GenerateRefreshToken();
+
+        var sessionResult = await sessionService.CreateSessionAsync(user.Id, device, ipAddress, refreshToken, cancellationToken);
+
+        if (sessionResult.IsFailure)
+        {
+            return Result.Failure<LoginResponse>(sessionResult.Error);
+        }
+
+        var accessToken = tokenProvider.GenerateAccessToken(user.Id, user.Email!, sessionResult.Value);
+
+        return Result.Success(new LoginResponse(accessToken, refreshToken));
     }
 
     public async Task<Result<LoginResponse>> RefreshTokenAsync(
@@ -51,7 +90,7 @@ internal class AuthenticationService(UserManager<ApplicationUser> userManager, I
         if (sessionResult.IsFailure)
         {
             return Result.Failure<LoginResponse>(
-                new Error("Auth.InvalidRefreshToken", "Токен оновлення недійсний або прострочений", ErrorType.Unauthorized));
+                new Error("Auth.InvalidRefreshToken", "Token is invalid or expired", ErrorType.Unauthorized));
         }
 
         var userId = sessionResult.Value;
@@ -60,24 +99,23 @@ internal class AuthenticationService(UserManager<ApplicationUser> userManager, I
         if (user is null)
         {
             return Result.Failure<LoginResponse>(
-                new Error("Auth.UserNotFound", "Користувача не знайдено", ErrorType.NotFound));
+                new Error("Auth.UserNotFound", "User not found", ErrorType.NotFound));
         }
 
         var newRefreshToken = tokenProvider.GenerateRefreshToken();
 
-        var updateResult = await sessionService.UpdateSessionRefreshTokenAsync(
+        var updateSessionResult = await sessionService.UpdateSessionRefreshTokenAsync(
             oldRefreshToken: refreshToken,
             newRefreshToken: newRefreshToken,
             ipAddress: ipAddress,
             cancellationToken: cancellationToken);
 
-        if (updateResult.IsFailure)
+        if (updateSessionResult.IsFailure)
         {
-            return Result.Failure<LoginResponse>(updateResult.Error);
+            return Result.Failure<LoginResponse>(updateSessionResult.Error);
         }
 
-        var sessionId = Guid.NewGuid();
-        var newAccessToken = tokenProvider.GenerateAccessToken(user.Id, user.Email!, sessionId);
+        var newAccessToken = tokenProvider.GenerateAccessToken(user.Id, user.Email!, updateSessionResult.Value);
 
         return Result.Success(new LoginResponse(newAccessToken, newRefreshToken));
     }
