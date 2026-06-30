@@ -4,11 +4,11 @@ namespace PairedBackend.Application.Services;
 
 public interface IUserService
 {
-    Task<Result<Guid>> RegisterAsync(
-        string email,
-        string username,
-        string password,
-        string firstName,
-        string lastName,
-        CancellationToken cancellationToken);
+    public Task<Result> ChangeUserInfo(string firstName, string lastName, string userName);
+
+    public Task<Result> ChangeProfilePicture();
+
+    public Task<Result> AddMusicPlatform();
+
+    public Task<Result> RemoveMusicPlatform();
 }
