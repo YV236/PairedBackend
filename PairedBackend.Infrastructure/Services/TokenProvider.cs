@@ -1,7 +1,7 @@
-﻿using Microsoft.IdentityModel.Tokens;
+﻿using Microsoft.IdentityModel.JsonWebTokens;
+using Microsoft.IdentityModel.Tokens;
 using PairedBackend.Application.Services;
 using PairedBackend.Infrastructure.Options;
-using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
@@ -12,27 +12,27 @@ internal class TokenProvider(JwtOptions jwtOptions) : ITokenProvider
 {
     public string GenerateAccessToken(Guid userId, string email, Guid sessionId)
     {
-        var claims = new List<Claim>
-        {
-            new(ClaimTypes.NameIdentifier, userId.ToString()),
-            new(ClaimTypes.Sid, sessionId.ToString()),
-            new(ClaimTypes.Email, email),
-            new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-            new(JwtRegisteredClaimNames.Iat, DateTimeOffset.UtcNow.ToUnixTimeSeconds().ToString(), ClaimValueTypes.Integer64)
-        };
-
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtOptions.SecretKey));
         var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
-        var token = new JwtSecurityToken(
-            issuer: jwtOptions.Issuer,
-            audience: jwtOptions.Audience,
-            claims: claims,
-            expires: DateTime.UtcNow.AddMinutes(jwtOptions.AccessTokenExpirationMinutes),
-            signingCredentials: creds
-            );
+        var tokenDescriptor = new SecurityTokenDescriptor
+        {
+            Subject = new ClaimsIdentity(new[]
+            {
+                new Claim(ClaimTypes.NameIdentifier, userId.ToString()),
+                new Claim(ClaimTypes.Sid, sessionId.ToString()),
+                new Claim(ClaimTypes.Email, email),
+                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
+            }),
+            Expires = DateTime.UtcNow.AddMinutes(jwtOptions.AccessTokenExpirationMinutes),
+            Issuer = jwtOptions.Issuer,
+            Audience = jwtOptions.Audience,
+            SigningCredentials = creds
+        };
 
-        return new JwtSecurityTokenHandler().WriteToken(token);
+        var handler = new JsonWebTokenHandler();
+
+        return handler.CreateToken(tokenDescriptor);
     }
 
     public string GenerateRefreshToken()
