@@ -66,16 +66,18 @@ internal class AuthenticationService(UserManager<ApplicationUser> userManager, I
                 new Error("Auth.InvalidCredentials", "Invalid credentials", ErrorType.Unauthorized));
         }
 
+        var sessionId = Guid.NewGuid();
+
         var refreshToken = tokenProvider.GenerateRefreshToken();
 
-        var sessionResult = await sessionService.CreateSessionAsync(user.Id, device, ipAddress, refreshToken, cancellationToken);
+        var accessToken = tokenProvider.GenerateAccessToken(user.Id, user.Email!, sessionId);
+
+        var sessionResult = await sessionService.CreateSessionAsync(user.Id, sessionId, device, ipAddress, refreshToken, cancellationToken);
 
         if (sessionResult.IsFailure)
         {
             return Result.Failure<LoginResponse>(sessionResult.Error);
         }
-
-        var accessToken = tokenProvider.GenerateAccessToken(user.Id, user.Email!, sessionResult.Value);
 
         return Result.Success(new LoginResponse(accessToken, refreshToken));
     }

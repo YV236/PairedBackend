@@ -8,11 +8,11 @@ namespace PairedBackend.Infrastructure.Services;
 
 internal class UserSessionService(AppDbContext context) : IUserSessionService
 {
-    public async Task<Result<Guid>> CreateSessionAsync(Guid userId, string device, string ipAddress, string refreshToken, CancellationToken cancellationToken)
+    public async Task<Result<Guid>> CreateSessionAsync(Guid userId, Guid sessionId, string device, string ipAddress, string refreshToken, CancellationToken cancellationToken)
     {
         var session = new UserSession()
         {
-            Id = Guid.NewGuid(),
+            Id = sessionId,
             UserId = userId,
             Device = device,
             IPAddress = ipAddress,

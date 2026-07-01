@@ -7,6 +7,7 @@ public interface IUserSessionService
 {
     Task<Result<Guid>> CreateSessionAsync(
         Guid userId,
+        Guid sessionId,
         string device,
         string ipAddress,
         string refreshToken,

@@ -1,4 +1,5 @@
-﻿using Microsoft.IdentityModel.JsonWebTokens;
+﻿using Microsoft.Extensions.Options;
+using Microsoft.IdentityModel.JsonWebTokens;
 using Microsoft.IdentityModel.Tokens;
 using PairedBackend.Application.Services;
 using PairedBackend.Infrastructure.Options;
@@ -8,8 +9,10 @@ using System.Text;
 
 namespace PairedBackend.Infrastructure.Services;
 
-internal class TokenProvider(JwtOptions jwtOptions) : ITokenProvider
+internal class TokenProvider(IOptions<JwtOptions> options) : ITokenProvider
 {
+    private readonly JwtOptions jwtOptions = options.Value;
+
     public string GenerateAccessToken(Guid userId, string email, Guid sessionId)
     {
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtOptions.SecretKey));

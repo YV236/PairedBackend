@@ -27,6 +27,8 @@ public static class DependencyInjection
             .AddDefaultTokenProviders();
 
         services.AddScoped<IAuthenticationService, AuthenticationService>();
+        services.AddScoped<IUserSessionService, UserSessionService>();
+        services.AddSingleton<ITokenProvider, TokenProvider>();
 
         services.Configure<JwtOptions>(
             configuration.GetSection(JwtOptions.SectionName));
