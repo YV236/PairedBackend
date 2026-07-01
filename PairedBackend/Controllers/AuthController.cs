@@ -1,6 +1,7 @@
 ﻿using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using PairedBackend.Application.Features.Auth.LoginUser;
+using PairedBackend.Application.Features.Auth.RefreshToken;
 using PairedBackend.Application.Features.Auth.RegisterUser;
 using PairedBackend.Contracts.User;
 
@@ -33,6 +34,57 @@ public class AuthController(IMediator mediator) : ApiController
     {
         var command = new LoginUserCommand(request.UserName, request.Email, request.Password, request.Device, request.IpAddress);
         var result = await mediator.Send(command);
-        return HandleResult(result);
+
+        if (result.IsFailure)
+        {
+            return HandleFailure(result.Error);
+        }
+
+        var cookieOptions = new CookieOptions
+        {
+            HttpOnly = true,
+            Secure = true,
+            SameSite = SameSiteMode.Strict,
+            Expires = DateTime.UtcNow.AddDays(30)
+        };
+
+        Response.Cookies.Append("refreshToken", result.Value.RefreshToken, cookieOptions);
+
+        return Ok(new { AccessToken = result.Value.AccessToken });
+    }
+
+    [HttpPost]
+    [Route("refresh")]
+    public async Task<IActionResult> Refresh(CancellationToken cancellationToken)
+    {
+        var refreshToken = Request.Cookies["refreshToken"];
+        if (string.IsNullOrEmpty(refreshToken))
+        {
+            return Unauthorized(new { message = "Refresh token is missing." });
+        }
+
+        var ipAddress = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "Unknown";
+
+        var userAgent = Request.Headers.UserAgent.ToString();
+
+        var command = new RefreshTokenCommand(refreshToken, ipAddress, userAgent);
+        var result = await mediator.Send(command, cancellationToken);
+
+        if (result.IsFailure)
+        {
+            return HandleFailure(result.Error);
+        }
+
+        var cookieOptions = new CookieOptions
+        {
+            HttpOnly = true,
+            Secure = true,
+            SameSite = SameSiteMode.Strict,
+            Expires = DateTime.UtcNow.AddDays(30)
+        };
+
+        Response.Cookies.Append("refreshToken", result.Value.RefreshToken, cookieOptions);
+
+        return Ok(new { AccessToken = result.Value.AccessToken });
     }
 }

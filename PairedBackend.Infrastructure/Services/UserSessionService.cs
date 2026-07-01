@@ -1,4 +1,5 @@
-﻿using PairedBackend.Application.Features.Sessions.GetUserSessions;
+﻿using Microsoft.EntityFrameworkCore;
+using PairedBackend.Application.Features.Sessions.GetUserSessions;
 using PairedBackend.Application.Services;
 using PairedBackend.Domain.Shared;
 using PairedBackend.Infrastructure.Identity;
@@ -8,7 +9,13 @@ namespace PairedBackend.Infrastructure.Services;
 
 internal class UserSessionService(AppDbContext context) : IUserSessionService
 {
-    public async Task<Result<Guid>> CreateSessionAsync(Guid userId, Guid sessionId, string device, string ipAddress, string refreshToken, CancellationToken cancellationToken)
+    public async Task<Result> CreateSessionAsync(
+        Guid userId,
+        Guid sessionId,
+        string device,
+        string ipAddress,
+        string refreshToken,
+        CancellationToken cancellationToken)
     {
         var session = new UserSession()
         {
@@ -29,9 +36,17 @@ internal class UserSessionService(AppDbContext context) : IUserSessionService
         return Result.Success(session.Id);
     }
 
-    public Task<Result<Guid>> GetUserIdByRefreshTokenAsync(string refreshToken, CancellationToken cancellationToken)
+    public async Task<Result<(Guid UserId, Guid SessionId)>> GetUserIdByRefreshTokenAsync(string refreshToken, CancellationToken cancellationToken)
     {
-        throw new NotImplementedException();
+        var session = await context.UserSessions
+            .FirstOrDefaultAsync(s => s.RefreshToken == refreshToken, cancellationToken);
+
+        if (session is null || session.IsRevoked)
+        {
+            return Result.Failure<(Guid, Guid)>(new Error("Auth.InvalidRefreshToken", "...", ErrorType.Unauthorized));
+        }
+
+        return Result.Success((session.UserId, session.Id));
     }
 
     public Task<Result<List<UserSessionResponse>>> GetUserSessions(Guid userId, CancellationToken cancellationToken)
@@ -49,8 +64,38 @@ internal class UserSessionService(AppDbContext context) : IUserSessionService
         throw new NotImplementedException();
     }
 
-    public Task<Result<Guid>> UpdateSessionRefreshTokenAsync(string oldRefreshToken, string newRefreshToken, string ipAddress, CancellationToken cancellationToken)
+    public async Task<Result> UpdateSessionRefreshTokenAsync(
+        string oldRefreshToken,
+        string newRefreshToken,
+        string ipAddress,
+        string device,
+        CancellationToken cancellationToken)
     {
-        throw new NotImplementedException();
+        var session = await context.UserSessions.FirstOrDefaultAsync(s => s.RefreshToken == oldRefreshToken);
+        if (session is null)
+        {
+            return Result.Failure<Guid>(
+                new Error("Auth.InvalidRefreshToken", "Token is invalid or expired", ErrorType.Unauthorized));
+        }
+
+        if (session.IsRevoked)
+        {
+            return Result.Failure<Guid>(
+                new Error("Auth.RevokedRefreshToken", "Token is revoked", ErrorType.Unauthorized));
+        }
+
+        if (session.Device != device)
+        {
+            return Result.Failure<Guid>(
+                new Error("Auth.InvalidDevice", "Device is invalid", ErrorType.Unauthorized));
+        }
+
+        session.RefreshToken = newRefreshToken;
+        session.IPAddress = ipAddress;
+        session.LastActiveAt = DateTime.UtcNow;
+
+        await context.SaveChangesAsync(cancellationToken);
+
+        return Result.Success(session.Id);
     }
 }

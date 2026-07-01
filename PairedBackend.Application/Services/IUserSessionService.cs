@@ -5,7 +5,7 @@ namespace PairedBackend.Application.Services;
 
 public interface IUserSessionService
 {
-    Task<Result<Guid>> CreateSessionAsync(
+    Task<Result> CreateSessionAsync(
         Guid userId,
         Guid sessionId,
         string device,
@@ -15,12 +15,13 @@ public interface IUserSessionService
 
     Task<Result<List<UserSessionResponse>>> GetUserSessions(Guid userId, CancellationToken cancellationToken);
 
-    Task<Result<Guid>> GetUserIdByRefreshTokenAsync(string refreshToken, CancellationToken cancellationToken);
+    Task<Result<(Guid UserId, Guid SessionId)>> GetUserIdByRefreshTokenAsync(string refreshToken, CancellationToken cancellationToken);
 
-    Task<Result<Guid>> UpdateSessionRefreshTokenAsync(
+    Task<Result> UpdateSessionRefreshTokenAsync(
         string oldRefreshToken,
         string newRefreshToken,
         string ipAddress,
+        string device,
         CancellationToken cancellationToken);
 
     Task<Result> RevokeSessionAsync(Guid sessionId, CancellationToken cancellationToken);

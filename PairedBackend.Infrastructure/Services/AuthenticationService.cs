@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Identity;
-using Microsoft.EntityFrameworkCore;
 using PairedBackend.Application.Features.Auth.LoginUser;
+using PairedBackend.Application.Features.Auth.RefreshToken;
 using PairedBackend.Application.Services;
 using PairedBackend.Domain.Shared;
 using PairedBackend.Infrastructure.Identity;
@@ -9,7 +9,13 @@ namespace PairedBackend.Infrastructure.Services;
 
 internal class AuthenticationService(UserManager<ApplicationUser> userManager, ITokenProvider tokenProvider, IUserSessionService sessionService) : IAuthenticationService
 {
-    public async Task<Result<Guid>> RegisterAsync(string email, string username, string password, string firstName, string lastName, CancellationToken cancellationToken)
+    public async Task<Result<Guid>> RegisterAsync(
+        string email,
+        string username,
+        string password,
+        string firstName,
+        string lastName,
+        CancellationToken cancellationToken)
     {
         var user = new ApplicationUser
         {
@@ -38,7 +44,13 @@ internal class AuthenticationService(UserManager<ApplicationUser> userManager, I
         return Result.Failure<Guid>(error);
     }
 
-    public async Task<Result<LoginResponse>> LoginAsync(string userName, string email, string password, string device, string ipAddress, CancellationToken cancellationToken)
+    public async Task<Result<LoginResponse>> LoginAsync(
+        string userName,
+        string email,
+        string password,
+        string device,
+        string ipAddress,
+        CancellationToken cancellationToken)
     {
         ApplicationUser? user = null;
 
@@ -82,43 +94,44 @@ internal class AuthenticationService(UserManager<ApplicationUser> userManager, I
         return Result.Success(new LoginResponse(accessToken, refreshToken));
     }
 
-    public async Task<Result<LoginResponse>> RefreshTokenAsync(
+    public async Task<Result<RefreshTokenResponse>> RefreshTokenAsync(
     string refreshToken,
     string ipAddress,
+    string device,
     CancellationToken cancellationToken)
     {
         var sessionResult = await sessionService.GetUserIdByRefreshTokenAsync(refreshToken, cancellationToken);
 
         if (sessionResult.IsFailure)
         {
-            return Result.Failure<LoginResponse>(
-                new Error("Auth.InvalidRefreshToken", "Token is invalid or expired", ErrorType.Unauthorized));
+            return Result.Failure<RefreshTokenResponse>(sessionResult.Error);
         }
 
-        var userId = sessionResult.Value;
+        var (userId, sessionId) = sessionResult.Value;
 
         var user = await userManager.FindByIdAsync(userId.ToString());
         if (user is null)
         {
-            return Result.Failure<LoginResponse>(
+            return Result.Failure<RefreshTokenResponse>(
                 new Error("Auth.UserNotFound", "User not found", ErrorType.NotFound));
         }
 
         var newRefreshToken = tokenProvider.GenerateRefreshToken();
 
+        var newAccessToken = tokenProvider.GenerateAccessToken(user.Id, user.Email!, sessionId);
+
         var updateSessionResult = await sessionService.UpdateSessionRefreshTokenAsync(
-            oldRefreshToken: refreshToken,
-            newRefreshToken: newRefreshToken,
-            ipAddress: ipAddress,
-            cancellationToken: cancellationToken);
+            refreshToken,
+            newRefreshToken,
+            ipAddress,
+            device,
+            cancellationToken);
 
         if (updateSessionResult.IsFailure)
         {
-            return Result.Failure<LoginResponse>(updateSessionResult.Error);
+            return Result.Failure<RefreshTokenResponse>(updateSessionResult.Error);
         }
 
-        var newAccessToken = tokenProvider.GenerateAccessToken(user.Id, user.Email!, updateSessionResult.Value);
-
-        return Result.Success(new LoginResponse(newAccessToken, newRefreshToken));
+        return Result.Success(new RefreshTokenResponse(newAccessToken, newRefreshToken));
     }
 }

@@ -1,4 +1,5 @@
 ﻿using PairedBackend.Application.Features.Auth.LoginUser;
+using PairedBackend.Application.Features.Auth.RefreshToken;
 using PairedBackend.Domain.Shared;
 
 namespace PairedBackend.Application.Services;
@@ -21,8 +22,9 @@ public interface IAuthenticationService
         string ipAddress,
         CancellationToken cancellationToken);
 
-    Task<Result<LoginResponse>> RefreshTokenAsync(
+    Task<Result<RefreshTokenResponse>> RefreshTokenAsync(
         string refreshToken,
         string ipAddress,
+        string device,
         CancellationToken cancellationToken);
 }

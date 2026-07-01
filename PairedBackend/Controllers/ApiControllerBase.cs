@@ -27,7 +27,7 @@ public abstract class ApiController : ControllerBase
         return HandleFailure(result.Error);
     }
 
-    private IActionResult HandleFailure(Error error)
+    protected IActionResult HandleFailure(Error error)
     {
         var statusCode = error.ErrorType switch
         {
