@@ -4,6 +4,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using PairedBackend.Application.Services;
 using PairedBackend.Infrastructure.Identity;
+using PairedBackend.Infrastructure.Options;
 using PairedBackend.Infrastructure.Persistence;
 using PairedBackend.Infrastructure.Services;
 
@@ -26,6 +27,11 @@ public static class DependencyInjection
             .AddDefaultTokenProviders();
 
         services.AddScoped<IAuthenticationService, AuthenticationService>();
+        services.AddScoped<IUserSessionService, UserSessionService>();
+        services.AddSingleton<ITokenProvider, TokenProvider>();
+
+        services.Configure<JwtOptions>(
+            configuration.GetSection(JwtOptions.SectionName));
 
         return services;
     }

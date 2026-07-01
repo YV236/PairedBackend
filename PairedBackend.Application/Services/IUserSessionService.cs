@@ -7,11 +7,9 @@ public interface IUserSessionService
 {
     Task<Result<Guid>> CreateSessionAsync(
         Guid userId,
+        Guid sessionId,
         string device,
-        string os,
-        string client,
         string ipAddress,
-        string location,
         string refreshToken,
         CancellationToken cancellationToken);
 
@@ -19,7 +17,7 @@ public interface IUserSessionService
 
     Task<Result<Guid>> GetUserIdByRefreshTokenAsync(string refreshToken, CancellationToken cancellationToken);
 
-    Task<Result> UpdateSessionRefreshTokenAsync(
+    Task<Result<Guid>> UpdateSessionRefreshTokenAsync(
         string oldRefreshToken,
         string newRefreshToken,
         string ipAddress,

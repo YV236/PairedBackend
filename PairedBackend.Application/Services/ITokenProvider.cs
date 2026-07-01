@@ -5,7 +5,7 @@ namespace PairedBackend.Application.Services;
 
 public interface ITokenProvider
 {
-    public string GenerateAccessToken(Guid userId, string Email, Guid sessionId);
+    public string GenerateAccessToken(Guid userId, string email, Guid sessionId);
 
     public string GenerateRefreshToken();
 }
