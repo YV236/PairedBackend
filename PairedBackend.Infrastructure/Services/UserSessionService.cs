@@ -77,9 +77,18 @@ internal class UserSessionService(AppDbContext context) : IUserSessionService
         return Result.Success(usersessions);
     }
 
-    public Task<Result> RevokeSessionAsync(Guid sessionId, CancellationToken cancellationToken)
+    public async Task<Result> RevokeSessionAsync(Guid userId, Guid sessionId, CancellationToken cancellationToken)
     {
-        throw new NotImplementedException();
+        var rowsAffected = await context.UserSessions
+            .Where(s => s.Id == sessionId && !s.IsRevoked && s.UserId == userId)
+            .ExecuteUpdateAsync(s => s.SetProperty(x => x.IsRevoked, true), cancellationToken);
+
+        if (rowsAffected == 0)
+        {
+            return Result.Failure(new Error("Auth.SessionNotFound", "Session not found or already revoked.", ErrorType.Unauthorized));
+        }
+
+        return Result.Success();
     }
 
     public async Task<Result> UpdateSessionRefreshTokenAsync(

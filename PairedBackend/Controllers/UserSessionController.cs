@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using PairedBackend.Application.Features.Sessions.GetUserSessions;
 using PairedBackend.Application.Features.Sessions.RevokeAllSessions;
+using PairedBackend.Application.Features.Sessions.RevokeSession;
 using System.Security.Claims;
 
 namespace PairedBackend.API.Controllers;
@@ -51,4 +52,18 @@ public class UserSessionController(IMediator mediator, IHttpContextAccessor http
         return HandleResult(result);
     }
 
+    [HttpPost]
+    [Route("revoke/{sessionId}")]
+    public async Task<IActionResult> RevokeSessionById(Guid sessionId, CancellationToken cancellationToken)
+    {
+        var userIdClaim = httpContextAccessor.HttpContext?.User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        if (userIdClaim == null || !Guid.TryParse(userIdClaim, out var userId))
+        {
+            return Unauthorized(new { message = "User is not authenticated." });
+        }
+
+        var command = new RevokeSessionCommand(userId, sessionId);
+        var result = await mediator.Send(command, cancellationToken);
+        return HandleResult(result);
+    }
 }
