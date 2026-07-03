@@ -8,8 +8,12 @@ internal class RegisterUserCommandHandler(IAuthenticationService userService) : 
 {
     public async Task<Result<Guid>> Handle(RegisterUserCommand request, CancellationToken cancellationToken)
     {
-        var result = await userService.RegisterAsync(request.Email, request.UserName, request.Password, request.FirstName, request.LastName, cancellationToken);
-
-        return result;
+        return await userService.RegisterAsync(
+            request.Email,
+            request.UserName,
+            request.Password,
+            request.FirstName,
+            request.LastName,
+            cancellationToken);
     }
 }
