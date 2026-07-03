@@ -24,11 +24,7 @@ public class UserSessionController(IMediator mediator, IHttpContextAccessor http
 
         var command = new GetUserSessionCommand(userId);
         var result = await mediator.Send(command, cancellationToken);
-        if (result.IsFailure)
-        {
-            return HandleFailure(result.Error);
-        }
-        return Ok(result.Value);
+        return HandleResult(result);
     }
 
     [HttpPost]

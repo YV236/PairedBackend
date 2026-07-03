@@ -26,9 +26,10 @@ public static class DependencyInjection
             .AddEntityFrameworkStores<AppDbContext>()
             .AddDefaultTokenProviders();
 
-        services.AddScoped<IAuthenticationService, AuthenticationService>();
-        services.AddScoped<IUserSessionService, UserSessionService>();
         services.AddSingleton<ITokenProvider, TokenProvider>();
+        services.AddScoped<IUserSessionService, UserSessionService>();
+        services.AddScoped<IAuthenticationService, AuthenticationService>();
+        services.AddScoped<IUserService, UserService>();
 
         services.Configure<JwtOptions>(
             configuration.GetSection(JwtOptions.SectionName));
