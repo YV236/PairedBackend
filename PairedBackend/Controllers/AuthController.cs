@@ -4,15 +4,13 @@ using Microsoft.AspNetCore.Mvc;
 using PairedBackend.Application.Features.Auth.LoginUser;
 using PairedBackend.Application.Features.Auth.RefreshToken;
 using PairedBackend.Application.Features.Auth.RegisterUser;
-using PairedBackend.Application.Features.Sessions.GetUserSessions;
 using PairedBackend.Contracts.User;
-using System.Security.Claims;
 
 namespace PairedBackend.API.Controllers;
 
 [ApiController]
 [Route("api/auth")]
-public class AuthController(IMediator mediator, IHttpContextAccessor httpContextAccessor) : ApiController
+public class AuthController(IMediator mediator) : ApiController
 {
     [HttpPost]
     [Route("register")]
@@ -90,26 +88,6 @@ public class AuthController(IMediator mediator, IHttpContextAccessor httpContext
         Response.Cookies.Append("refreshToken", result.Value.RefreshToken, cookieOptions);
 
         return Ok(new { AccessToken = result.Value.AccessToken });
-    }
-
-    [Authorize]
-    [HttpPost]
-    [Route("sessions")]
-    public async Task<IActionResult> GetUserSessions(CancellationToken cancellationToken)
-    {
-        var userIdClaim = httpContextAccessor.HttpContext?.User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-        if (userIdClaim == null || !Guid.TryParse(userIdClaim, out var userId))
-        {
-            return Unauthorized(new { message = "User is not authenticated." });
-        }
-
-        var command = new GetUserSessionCommand(userId);
-        var result = await mediator.Send(command, cancellationToken);
-        if (result.IsFailure)
-        {
-            return HandleFailure(result.Error);
-        }
-        return Ok(result.Value);
     }
 
 }

@@ -52,7 +52,7 @@ internal class UserSessionService(AppDbContext context) : IUserSessionService
     public async Task<Result<List<UserSessionResponse>>> GetUserSessions(Guid userId, CancellationToken cancellationToken)
     {
         var sessions = await context.UserSessions
-        .Where(s => s.UserId == userId)
+        .Where(s => s.UserId == userId && !s.IsRevoked)
         .Select(s => new UserSessionResponse(
             s.Id,
             s.Device,
@@ -68,9 +68,13 @@ internal class UserSessionService(AppDbContext context) : IUserSessionService
         return Result.Success(sessions);
     }
 
-    public Task<Result> RevokeAllUserSessionsAsync(Guid userId, CancellationToken cancellationToken)
+    public async Task<Result> RevokeAllUserSessionsAsync(Guid userId, Guid currentSession, CancellationToken cancellationToken)
     {
-        throw new NotImplementedException();
+        var usersessions = await context.UserSessions
+            .Where(s => s.UserId == userId && s.Id != currentSession && !s.IsRevoked)
+            .ExecuteUpdateAsync(s => s.SetProperty(x => x.IsRevoked, true), cancellationToken);
+
+        return Result.Success(usersessions);
     }
 
     public Task<Result> RevokeSessionAsync(Guid sessionId, CancellationToken cancellationToken)

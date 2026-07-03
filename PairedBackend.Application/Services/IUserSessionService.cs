@@ -26,5 +26,5 @@ public interface IUserSessionService
 
     Task<Result> RevokeSessionAsync(Guid sessionId, CancellationToken cancellationToken);
 
-    Task<Result> RevokeAllUserSessionsAsync(Guid userId, CancellationToken cancellationToken);
+    Task<Result> RevokeAllUserSessionsAsync(Guid userId, Guid currentSession, CancellationToken cancellationToken);
 }
