@@ -1,5 +1,12 @@
 ﻿namespace PairedBackend.Application.Features.Sessions.GetUserSessions;
 
-public class UserSessionResponse
-{
-}
+public record UserSessionResponse(
+    Guid Id,
+    string Device,
+    string OS,
+    string Client,
+    string IpAddress,
+    string Location,
+    DateTime CreatedAt,
+    DateTime LastActiveAt
+);

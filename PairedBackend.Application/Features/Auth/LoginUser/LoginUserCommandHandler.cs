@@ -4,18 +4,11 @@ using PairedBackend.Domain.Shared;
 
 namespace PairedBackend.Application.Features.Auth.LoginUser;
 
-internal class LoginCommandHandler : IRequestHandler<LoginUserCommand, Result<LoginResponse>>
+internal class LoginCommandHandler(IAuthenticationService authenticationService) : IRequestHandler<LoginUserCommand, Result<LoginResponse>>
 {
-    private readonly IAuthenticationService _authenticationService;
-
-    public LoginCommandHandler(IAuthenticationService authenticationService)
-    {
-        _authenticationService = authenticationService;
-    }
-
     public async Task<Result<LoginResponse>> Handle(LoginUserCommand request, CancellationToken cancellationToken)
     {
-        return await _authenticationService.LoginAsync(
+        return await authenticationService.LoginAsync(
             request.UserName,
             request.Email,
             request.Password,
