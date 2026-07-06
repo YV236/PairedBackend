@@ -6,28 +6,50 @@ using PairedBackend.Infrastructure.Persistence;
 
 namespace PairedBackend.Infrastructure.Services;
 
-internal class UserService(AppDbContext appDbContext) : IUserService
+internal class UserService(AppDbContext context) : IUserService
 {
     public async Task<Result<UserProfileData>> GetUserProfileDataAsync(Guid userId, CancellationToken cancellationToken)
     {
-        var user = await appDbContext.Users.FirstOrDefaultAsync(u => u.Id == userId, cancellationToken);
-        if (user == null)
+        var userProfileData = await context.Users
+            .Where(u => u.Id == userId)
+            .Select(u => new UserProfileData(
+                u.UserName ?? string.Empty,
+                u.Email ?? string.Empty,
+                u.PhoneNumber ?? string.Empty,
+                u.TwoFactorEnabled,
+                u.FirstName,
+                u.LastName,
+                u.UsedPlatforms
+            ))
+            .FirstOrDefaultAsync(cancellationToken);
+
+        if (userProfileData == null)
         {
             return Result.Failure<UserProfileData>(new Error("User.NotFound", "User not found", ErrorType.NotFound));
         }
 
-        var userProfileData = new UserProfileData
-        (
-            UserName : user.UserName ?? string.Empty,
-            Email : user.Email ?? string.Empty,
-            PhoneNumber: user.PhoneNumber ?? string.Empty,
-            TwoFactorEnabled: user.TwoFactorEnabled,
-            FirstName: user.FirstName,
-            LastName: user.LastName,
-            UsedPlatforms : user.UsedPlatforms
-        );
-
         return Result.Success(userProfileData);
+    }
+
+    public async Task<Result> ChangeUserProfileData(Guid userId, string firstName, string lastName, string userName, CancellationToken cancellationToken)
+    {
+        var normalizedUserName = userName.ToUpperInvariant();
+
+        var usersAffected = await context.Users
+            .Where(u => u.Id == userId)
+            .ExecuteUpdateAsync(s => s
+                .SetProperty(u => u.FirstName, firstName)
+                .SetProperty(u => u.LastName, lastName)
+                .SetProperty(u => u.UserName, userName)
+                .SetProperty(u => u.NormalizedUserName, normalizedUserName),
+                cancellationToken);
+
+        if (usersAffected == 0)
+        {
+            return Result.Failure(new Error("User.Error", "Could not change your data.", ErrorType.Conflict));
+        }
+
+        return Result.Success();
     }
 
     public Task<Result> AddMusicPlatform()
@@ -36,11 +58,6 @@ internal class UserService(AppDbContext appDbContext) : IUserService
     }
 
     public Task<Result> ChangeProfilePicture()
-    {
-        throw new NotImplementedException();
-    }
-
-    public Task<Result> ChangeUserInfo(string firstName, string lastName, string userName)
     {
         throw new NotImplementedException();
     }
