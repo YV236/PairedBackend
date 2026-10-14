@@ -44,6 +44,7 @@ internal class AuthenticationService(UserManager<ApplicationUser> userManager, I
         return Result.Failure<Guid>(error);
     }
 
+    // TODO: Consider adding a method to validate is session is valid and not expired or not revoked. This can be used to check if a user is still logged in or not to not create a new session.
     public async Task<Result<LoginResponse>> LoginAsync(
         string userName,
         string email,

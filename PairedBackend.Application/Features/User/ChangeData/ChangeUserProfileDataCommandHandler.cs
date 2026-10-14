@@ -8,6 +8,6 @@ internal class ChangeUserProfileDataCommandHandler(IUserService userService) : I
 {
     public async Task<Result> Handle(ChangeUserProfileDataCommand request, CancellationToken cancellationToken)
     {
-        return await userService.ChangeUserProfileData(request.UserId, request.FirstName, request.LastName, request.UserName);
+        return await userService.ChangeUserProfileData(request.UserId, request.FirstName, request.LastName, request.UserName, cancellationToken);
     }
 }
