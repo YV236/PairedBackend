@@ -1,10 +1,11 @@
-﻿using FluentValidation;
+using FluentValidation;
+using PairedBackend.Contracts.User;
 
 namespace PairedBackend.Application.Features.Auth.LoginUser;
 
-public class LoginUserCommandValidator : AbstractValidator<LoginUserCommand>
+public class LoginUserRequestValidator : AbstractValidator<LoginUserRequest>
 {
-    public LoginUserCommandValidator()
+    public LoginUserRequestValidator()
     {
         RuleFor(x => x.UserName)
             .NotEmpty()

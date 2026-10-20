@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity;
 using PairedBackend.Application.Features.Auth.LoginUser;
 using PairedBackend.Application.Features.Auth.RefreshToken;
 using PairedBackend.Application.Services;
@@ -15,6 +15,7 @@ internal class AuthenticationService(UserManager<ApplicationUser> userManager, I
         string password,
         string firstName,
         string lastName,
+        string phoneNumber,
         CancellationToken cancellationToken)
     {
         var user = new ApplicationUser
@@ -23,7 +24,8 @@ internal class AuthenticationService(UserManager<ApplicationUser> userManager, I
             Email = email,
             UserName = username,
             FirstName = firstName,
-            LastName = lastName
+            LastName = lastName,
+            PhoneNumber = phoneNumber
         };
 
         var result = await userManager.CreateAsync(user, password);

@@ -1,4 +1,4 @@
-﻿using PairedBackend.Application.Features.Auth.LoginUser;
+using PairedBackend.Application.Features.Auth.LoginUser;
 using PairedBackend.Application.Features.Auth.RefreshToken;
 using PairedBackend.Domain.Shared;
 
@@ -12,6 +12,7 @@ public interface IAuthenticationService
         string password,
         string firstName,
         string lastName,
+        string phoneNumber,
         CancellationToken cancellationToken);
 
     Task<Result<LoginResponse>> LoginAsync(

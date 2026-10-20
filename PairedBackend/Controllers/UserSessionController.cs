@@ -1,9 +1,6 @@
-﻿using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using PairedBackend.Application.Features.Sessions.GetUserSessions;
-using PairedBackend.Application.Features.Sessions.RevokeAllSessions;
-using PairedBackend.Application.Features.Sessions.RevokeSession;
+using PairedBackend.Application.Services;
 using System.Security.Claims;
 
 namespace PairedBackend.API.Controllers;
@@ -16,7 +13,7 @@ namespace PairedBackend.API.Controllers;
 [Authorize]
 [Route("api/user-sessions")]
 [ApiController]
-public class UserSessionController(IMediator mediator, IHttpContextAccessor httpContextAccessor) : ApiController
+public class UserSessionController(IUserSessionService userSessionService) : ApiController
 {
     /// <summary>
     /// Retrieve all active sessions for the authenticated user.
@@ -24,14 +21,12 @@ public class UserSessionController(IMediator mediator, IHttpContextAccessor http
     [HttpGet]
     public async Task<IActionResult> GetUserSessions(CancellationToken cancellationToken)
     {
-        var userIdClaim = httpContextAccessor.HttpContext?.User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-        if (userIdClaim == null || !Guid.TryParse(userIdClaim, out var userId))
+        if (!TryGetUserId(out var userId))
         {
             return Unauthorized(new { message = "User is not authenticated." });
         }
 
-        var command = new GetUserSessionCommand(userId);
-        var result = await mediator.Send(command, cancellationToken);
+        var result = await userSessionService.GetUserSessions(userId, cancellationToken);
         return HandleResult(result);
     }
 
@@ -42,20 +37,17 @@ public class UserSessionController(IMediator mediator, IHttpContextAccessor http
     [Route("revoke-all")]
     public async Task<IActionResult> RevokeAllSessions(CancellationToken cancellationToken)
     {
-        var userIdClaim = httpContextAccessor.HttpContext?.User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-        if (userIdClaim == null || !Guid.TryParse(userIdClaim, out var userId))
+        if (!TryGetUserId(out var userId))
         {
             return Unauthorized(new { message = "User is not authenticated." });
         }
-        var userSessionIdClaim = httpContextAccessor.HttpContext?.User?.FindFirst("Sid")?.Value;
 
-        if (userSessionIdClaim == null || !Guid.TryParse(userSessionIdClaim, out var userSessionId))
+        if (!Guid.TryParse(User.FindFirstValue("Sid"), out var sessionId))
         {
             return Unauthorized(new { message = "User session is not authenticated." });
         }
 
-        var command = new RevokeAllUserSessionsCommand(userId, userSessionId);
-        var result = await mediator.Send(command, cancellationToken);
+        var result = await userSessionService.RevokeAllUserSessionsAsync(userId, sessionId, cancellationToken);
         return HandleResult(result);
     }
 
@@ -68,14 +60,17 @@ public class UserSessionController(IMediator mediator, IHttpContextAccessor http
     [Route("revoke/{sessionId}")]
     public async Task<IActionResult> RevokeSessionById(Guid sessionId, CancellationToken cancellationToken)
     {
-        var userIdClaim = httpContextAccessor.HttpContext?.User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-        if (userIdClaim == null || !Guid.TryParse(userIdClaim, out var userId))
+        if (!TryGetUserId(out var userId))
         {
             return Unauthorized(new { message = "User is not authenticated." });
         }
 
-        var command = new RevokeSessionCommand(userId, sessionId);
-        var result = await mediator.Send(command, cancellationToken);
+        var result = await userSessionService.RevokeSessionAsync(userId, sessionId, cancellationToken);
         return HandleResult(result);
+    }
+
+    private bool TryGetUserId(out Guid userId)
+    {
+        return Guid.TryParse(User.FindFirstValue(ClaimTypes.NameIdentifier), out userId);
     }
 }

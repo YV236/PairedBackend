@@ -1,9 +1,7 @@
-﻿using MediatR;
+using FluentValidation;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using PairedBackend.Application.Features.Auth.LoginUser;
-using PairedBackend.Application.Features.Auth.RefreshToken;
-using PairedBackend.Application.Features.Auth.RegisterUser;
+using PairedBackend.Application.Services;
 using PairedBackend.Contracts.User;
 
 namespace PairedBackend.API.Controllers;
@@ -13,24 +11,27 @@ namespace PairedBackend.API.Controllers;
 /// </summary>
 [ApiController]
 [Route("api/auth")]
-public class AuthController(IMediator mediator) : ApiController
+public class AuthController(
+    IAuthenticationService authenticationService,
+    IValidator<RegisterUserRequest> registerValidator,
+    IValidator<LoginUserRequest> loginValidator) : ApiController
 {
     /// <summary>
     /// Create a new user account with the provided registration details.
     /// </summary>
     [HttpPost]
     [Route("register")]
-    public async Task<IActionResult> Register(RegisterUserRequest request)
+    public async Task<IActionResult> Register(RegisterUserRequest request, CancellationToken cancellationToken)
     {
-        var command = new RegisterUserCommand(
+        await registerValidator.ValidateAndThrowAsync(request, cancellationToken);
+        var result = await authenticationService.RegisterAsync(
             request.Email,
             request.UserName,
             request.Password,
             request.FirstName,
             request.LastName,
-            request.PhoneNumber);
-
-        var result = await mediator.Send(command);
+            request.PhoneNumber,
+            cancellationToken);
 
         return HandleResult(result);
     }
@@ -40,26 +41,23 @@ public class AuthController(IMediator mediator) : ApiController
     /// </summary>
     [HttpPost]
     [Route("login")]
-    public async Task<IActionResult> Login(LoginUserRequest request)
+    public async Task<IActionResult> Login(LoginUserRequest request, CancellationToken cancellationToken)
     {
-        var command = new LoginUserCommand(request.UserName, request.Email, request.Password, request.Device, request.IpAddress);
-        var result = await mediator.Send(command);
+        await loginValidator.ValidateAndThrowAsync(request, cancellationToken);
+        var result = await authenticationService.LoginAsync(
+            request.UserName,
+            request.Email,
+            request.Password,
+            request.Device,
+            request.IpAddress,
+            cancellationToken);
 
         if (result.IsFailure)
         {
             return HandleFailure(result.Error);
         }
 
-        var cookieOptions = new CookieOptions
-        {
-            HttpOnly = true,
-            Secure = true,
-            SameSite = SameSiteMode.Strict,
-            Expires = DateTime.UtcNow.AddDays(30)
-        };
-
-        Response.Cookies.Append("refreshToken", result.Value.RefreshToken, cookieOptions);
-
+        AppendRefreshTokenCookie(result.Value.RefreshToken);
         return Ok(new { AccessToken = result.Value.AccessToken });
     }
 
@@ -78,28 +76,26 @@ public class AuthController(IMediator mediator) : ApiController
         }
 
         var ipAddress = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "Unknown";
-
         var userAgent = Request.Headers.UserAgent.ToString();
-
-        var command = new RefreshTokenCommand(refreshToken, ipAddress, userAgent);
-        var result = await mediator.Send(command, cancellationToken);
+        var result = await authenticationService.RefreshTokenAsync(refreshToken, ipAddress, userAgent, cancellationToken);
 
         if (result.IsFailure)
         {
             return HandleFailure(result.Error);
         }
 
-        var cookieOptions = new CookieOptions
+        AppendRefreshTokenCookie(result.Value.RefreshToken);
+        return Ok(new { AccessToken = result.Value.AccessToken });
+    }
+
+    private void AppendRefreshTokenCookie(string refreshToken)
+    {
+        Response.Cookies.Append("refreshToken", refreshToken, new CookieOptions
         {
             HttpOnly = true,
             Secure = true,
             SameSite = SameSiteMode.Strict,
             Expires = DateTime.UtcNow.AddDays(30)
-        };
-
-        Response.Cookies.Append("refreshToken", result.Value.RefreshToken, cookieOptions);
-
-        return Ok(new { AccessToken = result.Value.AccessToken });
+        });
     }
-
 }

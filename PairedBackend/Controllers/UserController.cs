@@ -1,8 +1,6 @@
-﻿using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using PairedBackend.Application.Features.User.ChangeData;
-using PairedBackend.Application.Features.User.ProfileData;
+using PairedBackend.Application.Services;
 using PairedBackend.Contracts.User;
 using System.Security.Claims;
 
@@ -14,7 +12,7 @@ namespace PairedBackend.API.Controllers;
 [Authorize]
 [Route("api/profile")]
 [ApiController]
-public class UserController(IMediator mediator, IHttpContextAccessor httpContextAccessor) : ApiController
+public class UserController(IUserService userService) : ApiController
 {
     /// <summary>
     /// Retrives the profile data of the authenticated user.
@@ -22,15 +20,12 @@ public class UserController(IMediator mediator, IHttpContextAccessor httpContext
     [HttpGet]
     public async Task<IActionResult> GetUserData(CancellationToken cancellationToken)
     {
-        var userIdClaim = httpContextAccessor.HttpContext?.User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-        if (userIdClaim == null || !Guid.TryParse(userIdClaim, out var userId))
+        if (!TryGetUserId(out var userId))
         {
             return Unauthorized(new { message = "User is not authenticated." });
         }
 
-        var command = new GetUserProfileDataCommand(userId);
-        var result = await mediator.Send(command, cancellationToken);
-
+        var result = await userService.GetUserProfileDataAsync(userId, cancellationToken);
         return HandleResult(result);
     }
 
@@ -40,15 +35,22 @@ public class UserController(IMediator mediator, IHttpContextAccessor httpContext
     [HttpPut]
     public async Task<IActionResult> ChangeProfileData(ChangeProfileDataRequest request, CancellationToken cancellationToken)
     {
-        var userIdClaim = httpContextAccessor.HttpContext?.User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-        if (userIdClaim == null || !Guid.TryParse(userIdClaim, out var userId))
+        if (!TryGetUserId(out var userId))
         {
             return Unauthorized(new { message = "User is not authenticated." });
         }
 
-        var command = new ChangeUserProfileDataCommand(userId, request.FirstName, request.LastName, request.UserName);
-        var result = await mediator.Send(command, cancellationToken);
-
+        var result = await userService.ChangeUserProfileData(
+            userId,
+            request.FirstName,
+            request.LastName,
+            request.UserName,
+            cancellationToken);
         return HandleResult(result);
+    }
+
+    private bool TryGetUserId(out Guid userId)
+    {
+        return Guid.TryParse(User.FindFirstValue(ClaimTypes.NameIdentifier), out userId);
     }
 }

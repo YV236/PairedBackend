@@ -1,11 +1,11 @@
-﻿using FluentValidation;
+using FluentValidation;
+using PairedBackend.Contracts.User;
 
 namespace PairedBackend.Application.Features.Auth.RegisterUser;
 
-public class RegisterUserCommandValidator
-    : AbstractValidator<RegisterUserCommand>
+public class RegisterUserRequestValidator : AbstractValidator<RegisterUserRequest>
 {
-    public RegisterUserCommandValidator()
+    public RegisterUserRequestValidator()
     {
         RuleFor(x => x.Email)
             .NotEmpty()
@@ -19,10 +19,7 @@ public class RegisterUserCommandValidator
             .NotEmpty()
             .MinimumLength(8);
 
-        RuleFor(x => x.FirstName)
-            .NotEmpty();
-
-        RuleFor(x => x.LastName)
-            .NotEmpty();
+        RuleFor(x => x.FirstName).NotEmpty();
+        RuleFor(x => x.LastName).NotEmpty();
     }
 }
