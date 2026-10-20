@@ -1,7 +1,7 @@
 using FluentValidation;
-using PairedBackend.Contracts.User;
+using PairedBackend.Contracts.Requests.User;
 
-namespace PairedBackend.Application.Features.Auth.LoginUser;
+namespace PairedBackend.Contracts.Validators.User;
 
 public class LoginUserRequestValidator : AbstractValidator<LoginUserRequest>
 {
@@ -20,3 +20,4 @@ public class LoginUserRequestValidator : AbstractValidator<LoginUserRequest>
             .MinimumLength(8);
     }
 }
+

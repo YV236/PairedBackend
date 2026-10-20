@@ -2,7 +2,7 @@ using FluentValidation;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using PairedBackend.Application.Services;
-using PairedBackend.Contracts.User;
+using PairedBackend.Contracts.Requests.User;
 
 namespace PairedBackend.API.Controllers;
 
@@ -24,14 +24,7 @@ public class AuthController(
     public async Task<IActionResult> Register(RegisterUserRequest request, CancellationToken cancellationToken)
     {
         await registerValidator.ValidateAndThrowAsync(request, cancellationToken);
-        var result = await authenticationService.RegisterAsync(
-            request.Email,
-            request.UserName,
-            request.Password,
-            request.FirstName,
-            request.LastName,
-            request.PhoneNumber,
-            cancellationToken);
+        var result = await authenticationService.RegisterAsync(request, cancellationToken);
 
         return HandleResult(result);
     }
@@ -44,13 +37,7 @@ public class AuthController(
     public async Task<IActionResult> Login(LoginUserRequest request, CancellationToken cancellationToken)
     {
         await loginValidator.ValidateAndThrowAsync(request, cancellationToken);
-        var result = await authenticationService.LoginAsync(
-            request.UserName,
-            request.Email,
-            request.Password,
-            request.Device,
-            request.IpAddress,
-            cancellationToken);
+        var result = await authenticationService.LoginAsync(request, cancellationToken);
 
         if (result.IsFailure)
         {

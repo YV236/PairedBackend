@@ -1,7 +1,7 @@
-﻿
+
 using PairedBackend.Domain.Enums;
 
-namespace PairedBackend.Application.Features.User.ProfileData;
+namespace PairedBackend.Contracts.Responses.User;
 
 public record UserProfileData
 (
@@ -13,3 +13,4 @@ public record UserProfileData
     string LastName,
     List<MusicPlatform> UsedPlatforms
 );
+

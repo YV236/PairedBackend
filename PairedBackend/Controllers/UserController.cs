@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using PairedBackend.Application.Services;
-using PairedBackend.Contracts.User;
+using PairedBackend.Contracts.Requests.User;
 using System.Security.Claims;
 
 namespace PairedBackend.API.Controllers;
@@ -40,12 +40,7 @@ public class UserController(IUserService userService) : ApiController
             return Unauthorized(new { message = "User is not authenticated." });
         }
 
-        var result = await userService.ChangeUserProfileData(
-            userId,
-            request.FirstName,
-            request.LastName,
-            request.UserName,
-            cancellationToken);
+        var result = await userService.ChangeUserProfileData(userId, request, cancellationToken);
         return HandleResult(result);
     }
 

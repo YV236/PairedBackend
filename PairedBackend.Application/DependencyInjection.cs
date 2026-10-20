@@ -1,8 +1,8 @@
-﻿using FluentValidation;
+using FluentValidation;
 using MediatR;
 using Microsoft.Extensions.DependencyInjection;
 using PairedBackend.Application.Behaviors;
-using PairedBackend.Application.Services;
+using PairedBackend.Contracts.Requests.User;
 
 namespace PairedBackend.Application;
 
@@ -16,8 +16,7 @@ public static class DependencyInjection
             cfg.RegisterServicesFromAssembly(typeof(DependencyInjection).Assembly);
         });
 
-        services.AddValidatorsFromAssembly(typeof(DependencyInjection).Assembly);
-
+        services.AddValidatorsFromAssembly(typeof(RegisterUserRequest).Assembly);
 
         services.AddTransient(
             typeof(IPipelineBehavior<,>),

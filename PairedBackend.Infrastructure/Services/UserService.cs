@@ -1,6 +1,7 @@
-﻿using Microsoft.EntityFrameworkCore;
-using PairedBackend.Application.Features.User.ProfileData;
+using Microsoft.EntityFrameworkCore;
+using PairedBackend.Contracts.Responses.User;
 using PairedBackend.Application.Services;
+using PairedBackend.Contracts.Requests.User;
 using PairedBackend.Domain.Shared;
 using PairedBackend.Infrastructure.Persistence;
 
@@ -31,16 +32,19 @@ internal class UserService(AppDbContext context) : IUserService
         return Result.Success(userProfileData);
     }
 
-    public async Task<Result> ChangeUserProfileData(Guid userId, string firstName, string lastName, string userName, CancellationToken cancellationToken)
+    public async Task<Result> ChangeUserProfileData(
+        Guid userId,
+        ChangeProfileDataRequest request,
+        CancellationToken cancellationToken)
     {
-        var normalizedUserName = userName.ToUpperInvariant();
+        var normalizedUserName = request.UserName.ToUpperInvariant();
 
         var usersAffected = await context.Users
             .Where(u => u.Id == userId)
             .ExecuteUpdateAsync(s => s
-                .SetProperty(u => u.FirstName, firstName)
-                .SetProperty(u => u.LastName, lastName)
-                .SetProperty(u => u.UserName, userName)
+                .SetProperty(u => u.FirstName, request.FirstName)
+                .SetProperty(u => u.LastName, request.LastName)
+                .SetProperty(u => u.UserName, request.UserName)
                 .SetProperty(u => u.NormalizedUserName, normalizedUserName),
                 cancellationToken);
 

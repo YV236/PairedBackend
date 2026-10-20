@@ -1,5 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
-using PairedBackend.Application.Features.Sessions.GetUserSessions;
+using Microsoft.EntityFrameworkCore;
+using PairedBackend.Contracts.Responses.UserSession;
 using PairedBackend.Application.Services;
 using PairedBackend.Domain.Shared;
 using PairedBackend.Infrastructure.Identity;
@@ -31,7 +31,7 @@ internal class UserSessionService(AppDbContext context) : IUserSessionService
 
         context.UserSessions.Add(session);
 
-        await context.SaveChangesAsync();
+        await context.SaveChangesAsync(cancellationToken);
 
         return Result.Success(session.Id);
     }

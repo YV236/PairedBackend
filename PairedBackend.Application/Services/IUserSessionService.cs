@@ -1,4 +1,4 @@
-﻿using PairedBackend.Application.Features.Sessions.GetUserSessions;
+using PairedBackend.Contracts.Responses.UserSession;
 using PairedBackend.Domain.Shared;
 
 namespace PairedBackend.Application.Services;
@@ -15,7 +15,9 @@ public interface IUserSessionService
 
     Task<Result<List<UserSessionResponse>>> GetUserSessions(Guid userId, CancellationToken cancellationToken);
 
-    Task<Result<(Guid UserId, Guid SessionId)>> GetUserIdByRefreshTokenAsync(string refreshToken, CancellationToken cancellationToken);
+    Task<Result<(Guid UserId, Guid SessionId)>> GetUserIdByRefreshTokenAsync(
+        string refreshToken,
+        CancellationToken cancellationToken);
 
     Task<Result> UpdateSessionRefreshTokenAsync(
         string oldRefreshToken,

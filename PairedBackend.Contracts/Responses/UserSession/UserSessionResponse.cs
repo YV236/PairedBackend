@@ -1,4 +1,4 @@
-﻿namespace PairedBackend.Application.Features.Sessions.GetUserSessions;
+namespace PairedBackend.Contracts.Responses.UserSession;
 
 public record UserSessionResponse(
     Guid Id,

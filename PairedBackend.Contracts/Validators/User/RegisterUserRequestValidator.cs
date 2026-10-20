@@ -1,7 +1,7 @@
 using FluentValidation;
-using PairedBackend.Contracts.User;
+using PairedBackend.Contracts.Requests.User;
 
-namespace PairedBackend.Application.Features.Auth.RegisterUser;
+namespace PairedBackend.Contracts.Validators.User;
 
 public class RegisterUserRequestValidator : AbstractValidator<RegisterUserRequest>
 {
@@ -23,3 +23,4 @@ public class RegisterUserRequestValidator : AbstractValidator<RegisterUserReques
         RuleFor(x => x.LastName).NotEmpty();
     }
 }
+
