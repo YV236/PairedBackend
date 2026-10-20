@@ -8,11 +8,17 @@ using System.Security.Claims;
 
 namespace PairedBackend.API.Controllers;
 
+/// <summary>
+/// User profile data is a component of the user entity that contains personal information.
+/// </summary>
 [Authorize]
 [Route("api/profile")]
 [ApiController]
 public class UserController(IMediator mediator, IHttpContextAccessor httpContextAccessor) : ApiController
 {
+    /// <summary>
+    /// Retrives the profile data of the authenticated user.
+    /// </summary>
     [HttpGet]
     public async Task<IActionResult> GetUserData(CancellationToken cancellationToken)
     {
@@ -28,6 +34,9 @@ public class UserController(IMediator mediator, IHttpContextAccessor httpContext
         return HandleResult(result);
     }
 
+    /// <summary>
+    /// Changing user profile data allows the authenticated user to update their personal information.
+    /// </summary>
     [HttpPut]
     public async Task<IActionResult> ChangeProfileData(ChangeProfileDataRequest request, CancellationToken cancellationToken)
     {

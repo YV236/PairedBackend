@@ -8,10 +8,16 @@ using PairedBackend.Contracts.User;
 
 namespace PairedBackend.API.Controllers;
 
+/// <summary>
+/// Authenication allows user to get access to the system by providing valid credentials.
+/// </summary>
 [ApiController]
 [Route("api/auth")]
 public class AuthController(IMediator mediator) : ApiController
 {
+    /// <summary>
+    /// Create a new user account with the provided registration details.
+    /// </summary>
     [HttpPost]
     [Route("register")]
     public async Task<IActionResult> Register(RegisterUserRequest request)
@@ -29,6 +35,9 @@ public class AuthController(IMediator mediator) : ApiController
         return HandleResult(result);
     }
 
+    /// <summary>
+    /// Login into the system using valid credentials and receive an access token and refresh token.
+    /// </summary>
     [HttpPost]
     [Route("login")]
     public async Task<IActionResult> Login(LoginUserRequest request)
@@ -54,6 +63,9 @@ public class AuthController(IMediator mediator) : ApiController
         return Ok(new { AccessToken = result.Value.AccessToken });
     }
 
+    /// <summary>
+    /// Refresh the access token using a valid refresh token.
+    /// </summary>
     [Authorize]
     [HttpPost]
     [Route("refresh")]
