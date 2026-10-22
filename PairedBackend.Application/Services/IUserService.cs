@@ -1,14 +1,21 @@
-﻿using PairedBackend.Domain.Shared;
+using PairedBackend.Contracts.Responses.User;
+using PairedBackend.Contracts.Requests.User;
+using PairedBackend.Domain.Shared;
 
 namespace PairedBackend.Application.Services;
 
 public interface IUserService
 {
-    public Task<Result> ChangeUserInfo(string firstName, string lastName, string userName);
+    Task<Result<UserProfileData>> GetUserProfileDataAsync(Guid userId, CancellationToken cancellationToken);
 
-    public Task<Result> ChangeProfilePicture();
+    Task<Result> ChangeUserProfileData(
+        Guid userId,
+        ChangeProfileDataRequest request,
+        CancellationToken cancellationToken);
 
-    public Task<Result> AddMusicPlatform();
+    Task<Result> ChangeProfilePicture();
 
-    public Task<Result> RemoveMusicPlatform();
+    Task<Result> AddMusicPlatform();
+
+    Task<Result> RemoveMusicPlatform();
 }

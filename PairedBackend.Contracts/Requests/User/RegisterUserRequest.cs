@@ -1,4 +1,4 @@
-﻿namespace PairedBackend.Contracts.User;
+namespace PairedBackend.Contracts.Requests.User;
 
 public class RegisterUserRequest
 {
@@ -14,3 +14,4 @@ public class RegisterUserRequest
 
     public string Password { get; set; } = string.Empty;
 }
+

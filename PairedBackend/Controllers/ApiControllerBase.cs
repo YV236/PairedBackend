@@ -3,6 +3,9 @@ using PairedBackend.Domain.Shared;
 
 namespace PairedBackend.API.Controllers;
 
+/// <summary>
+/// Base class for all contollers in application. Provides common functionality for handling results and errors.
+/// </summary>
 [ApiController]
 [Route("api/[controller]")]
 public abstract class ApiController : ControllerBase

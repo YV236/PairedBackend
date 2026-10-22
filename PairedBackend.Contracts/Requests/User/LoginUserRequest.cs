@@ -1,5 +1,5 @@
-﻿
-namespace PairedBackend.Contracts.User;
+
+namespace PairedBackend.Contracts.Requests.User;
 
 public class LoginUserRequest
 {
@@ -13,3 +13,4 @@ public class LoginUserRequest
 
     public string IpAddress { get; set; } = string.Empty;
 }
+

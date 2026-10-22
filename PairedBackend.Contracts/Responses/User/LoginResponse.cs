@@ -1,3 +1,4 @@
-﻿namespace PairedBackend.Application.Features.Auth.LoginUser;
+namespace PairedBackend.Contracts.Responses.User;
 
 public record LoginResponse(string AccessToken, string RefreshToken);
+
